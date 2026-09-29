@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Enchantment Forge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@600;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #0c0a16;
+    --ink: #3a2615;
+    --ink-soft: #6b4f33;
+    --blood: #8e2a1f;
+    --gold: #d8aa4a;
+    --gold-bright: #f3d27a;
+    --arcane: #8fe0ff;
+    --emerald: #3fbf8a;
+    --crimson: #c0453c;
+    --parch-1: #f3e5c2;
+    --parch-2: #e4cc98;
+    --frame: #8a6a3a;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    color: var(--ink);
+    font-family: 'IM Fell English', Georgia, serif;
+    font-size: 19px;
+    line-height: 1.5;
+    background-color: var(--night);
+    background-image:
+      radial-gradient(1px 1px at 12% 18%, rgba(255,255,255,.7), transparent 60%),
+      radial-gradient(1px 1px at 72% 8%, rgba(255,255,255,.6), transparent 60%),
+      radial-gradient(1.5px 1.5px at 38% 42%, rgba(255,240,200,.5), transparent 60%),
+      radial-gradient(1px 1px at 88% 36%, rgba(255,255,255,.55), transparent 60%),
+      radial-gradient(1px 1px at 22% 78%, rgba(255,255,255,.5), transparent 60%),
+      radial-gradient(1.5px 1.5px at 62% 68%, rgba(200,220,255,.5), transparent 60%),
+      radial-gradient(1px 1px at 94% 88%, rgba(255,255,255,.5), transparent 60%),
+      radial-gradient(1px 1px at 50% 94%, rgba(255,255,255,.4), transparent 60%),
+      radial-gradient(ellipse at 50% -10%, #3a2a5c 0%, #1a1430 40%, var(--night) 75%);
+    background-size: 420px 420px, 380px 380px, 520px 520px, 460px 460px, 400px 400px, 560px 560px, 480px 480px, 440px 440px, 100% 100%;
+    background-attachment: fixed;
+  }
+  #fx { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+  main { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 44px 16px 72px; }
+
+  /* ---------- Header ---------- */
+  header { text-align: center; color: var(--parch-1); }
+  h1 {
+    font-family: 'Cinzel Decorative', Cinzel, serif; font-weight: 700;
+    font-size: clamp(30px, 7vw, 54px); margin: 0; letter-spacing: .04em;
+    color: var(--gold-bright);
+    text-shadow: 0 0 18px rgba(243,190,90,.55), 0 0 42px rgba(200,120,40,.35), 0 2px 0 #5a3a12;
+  }
+  header p { margin: 8px auto 0; max-width: 520px; font-style: italic; color: #cdbfa0; }
+  .flourish {
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    color: var(--gold); margin: 14px auto 0; max-width: 360px;
+  }
+  .flourish::before, .flourish::after {
+    content: ""; flex: 1; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+
+  /* ---------- Parchment pages ---------- */
+  .card {
+    position: relative; margin-top: 30px; padding: 32px 30px;
+    background:
+      radial-gradient(ellipse at 18% 8%, rgba(255,255,255,.45), transparent 42%),
+      radial-gradient(ellipse at 85% 95%, rgba(140,90,30,.22), transparent 50%),
+      radial-gradient(circle at 70% 30%, rgba(160,110,50,.08), transparent 20%),
+      linear-gradient(170deg, var(--parch-1), var(--parch-2));
+    border-radius: 6px;
+    box-shadow:
+      0 0 0 1px var(--frame), 0 0 0 6px #2b1d12, 0 0 0 7px var(--frame),
+      0 24px 60px rgba(0,0,0,.65),
+      inset 0 0 80px rgba(120,75,25,.45);
+  }
+  .card::before {
+    content: ""; position: absolute; inset: 11px; pointer-events: none; border-radius: 3px;
+    border: 1px solid rgba(110,75,35,.5);
+    outline: 1px solid rgba(110,75,35,.25); outline-offset: 4px;
+  }
+  .corner { position: absolute; width: 26px; height: 26px; color: var(--frame); pointer-events: none; }
+  .corner.tl { top: 5px; left: 5px; }
+  .corner.tr { top: 5px; right: 5px; transform: scaleX(-1); }
+  .corner.bl { bottom: 5px; left: 5px; transform: scaleY(-1); }
+  .corner.br { bottom: 5px; right: 5px; transform: scale(-1,-1); }
+
+  .step { display: flex; align-items: center; gap: 14px; margin: 0 0 6px; }
+  .seal {
+    flex: none; width: 46px; height: 46px; border-radius: 50%;
+    display: grid; place-items: center;
+    font-family: Cinzel, serif; font-weight: 700; font-size: 17px; color: var(--gold-bright);
+    background: radial-gradient(circle at 35% 30%, #c2463a, #7a1d15 65%, #4e0f0a);
+    box-shadow: 0 2px 4px rgba(0,0,0,.45), inset 0 0 0 3px rgba(0,0,0,.18), inset 0 0 0 5px rgba(255,200,150,.12);
+    text-shadow: 0 1px 0 #3a0a06;
+  }
+  .step h2 { font-family: Cinzel, serif; font-weight: 700; font-size: 23px; margin: 0; color: var(--blood); letter-spacing: .05em; }
+  .hint { color: var(--ink-soft); font-style: italic; margin: 4px 0 18px 60px; }
+
+  .row { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; }
+  .field { display: flex; flex-direction: column; gap: 6px; font-size: 16px; color: var(--ink-soft); font-style: italic; }
+  input[type=number], input[type=text], textarea {
+    width: 100%; font: inherit; font-style: normal; color: var(--ink);
+    background: rgba(255,249,232,.55);
+    border: 1px solid #a8844e; border-radius: 4px; padding: 10px 12px;
+    box-shadow: inset 0 1px 4px rgba(100,60,20,.25);
+  }
+  input[type=number] { width: 120px; font-family: Cinzel, serif; font-weight: 700; }
+  input::placeholder, textarea::placeholder { color: #9a7f5c; font-style: italic; }
+  input:focus, textarea:focus { outline: 2px solid rgba(142,42,31,.5); outline-offset: 1px; }
+  textarea {
+    font-family: Cinzel, serif; font-weight: 600; font-size: 21px; letter-spacing: .03em;
+    min-height: 100px; resize: vertical; line-height: 1.4;
+  }
+  textarea[readonly] { opacity: .7; }
+
+  button {
+    font-family: Cinzel, serif; font-weight: 700; font-size: 15px; letter-spacing: .08em;
+    padding: 12px 22px; border-radius: 4px; cursor: pointer;
+    color: var(--gold-bright); background: linear-gradient(#5a3620, #3b2213);
+    border: 1px solid #1f120a;
+    box-shadow: inset 0 1px 0 rgba(255,210,150,.25), 0 2px 0 #1f120a, 0 4px 10px rgba(0,0,0,.35);
+    transition: transform .1s, filter .15s, box-shadow .15s;
+  }
+  button.primary {
+    color: #2a1706; background: linear-gradient(#f6d98a, #c8923a 60%, #a87222);
+    border-color: #6e4a18;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.55), 0 2px 0 #6e4a18, 0 4px 14px rgba(200,140,40,.35);
+    text-shadow: 0 1px 0 rgba(255,240,200,.5);
+  }
+  button:hover:not(:disabled) { filter: brightness(1.12); }
+  button:active:not(:disabled) { transform: translateY(2px); box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 0 0 #000; }
+  button:disabled { opacity: .45; cursor: not-allowed; filter: saturate(.5); }
+  button.small { padding: 8px 14px; font-size: 13px; }
+
+  details { margin-top: 18px; color: var(--ink-soft); font-size: 17px; }
+  summary { cursor: pointer; font-style: italic; }
+  summary:hover { color: var(--blood); }
+  details .row { margin-top: 10px; }
+  details .field { flex: 1 1 260px; }
+
+  /* ---------- Runestones ---------- */
+  .pool-info { margin: 18px 0 0; color: var(--ink-soft); font-style: italic; font-size: 17px; }
+  .tiles {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; padding: 16px;
+    background: radial-gradient(ellipse at center, rgba(90,55,25,.18), rgba(90,55,25,.05));
+    border: 1px dashed rgba(110,75,35,.4); border-radius: 6px;
+  }
+  .tile {
+    --r: 0deg;
+    width: 42px; height: 48px; display: grid; place-items: center;
+    font-family: Cinzel, serif; font-weight: 700; font-size: 21px;
+    color: var(--gold-bright);
+    background: radial-gradient(ellipse at 35% 28%, #88848e, #524e59 58%, #34313b);
+    border-radius: 12px 9px 13px 8px / 10px 13px 9px 12px;
+    text-shadow: 0 0 6px rgba(243,210,122,.95), 0 0 16px rgba(243,150,50,.6);
+    box-shadow: inset 0 -3px 0 rgba(0,0,0,.35), inset 0 2px 0 rgba(255,255,255,.18), 0 3px 6px rgba(40,20,5,.5);
+    transform: rotate(var(--r));
+    transition: opacity .2s, transform .2s, color .2s, text-shadow .2s;
+  }
+  .tile:nth-child(3n) { border-radius: 9px 13px 8px 12px / 12px 9px 13px 10px; }
+  .tile:nth-child(4n+1) { border-radius: 13px 10px 11px 9px / 9px 12px 10px 13px; }
+  .tile.vowel { color: var(--arcane); text-shadow: 0 0 6px rgba(143,224,255,.95), 0 0 16px rgba(70,150,255,.65); }
+  .tile.used { opacity: .35; color: #8f8a96; text-shadow: none; transform: rotate(var(--r)) scale(.88); }
+
+  .status { margin-top: 12px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 17px; font-style: italic; color: var(--ink-soft); }
+  .status .over { color: var(--blood); font-style: normal; }
+  .status #statusPct { font-family: Cinzel, serif; font-style: normal; font-weight: 700; color: var(--blood); }
+  .meter {
+    height: 12px; margin-top: 8px; border-radius: 99px; overflow: hidden;
+    background: #2a1d14; border: 1px solid #1a110a; box-shadow: inset 0 2px 4px rgba(0,0,0,.6);
+  }
+  .meter span {
+    display: block; height: 100%; width: 0;
+    background: linear-gradient(90deg, #3a6bd6, var(--arcane), #e9f9ff);
+    box-shadow: 0 0 10px rgba(143,224,255,.8);
+    transition: width .25s;
+  }
+
+  .check { display: flex; align-items: center; gap: 9px; font-size: 17px; color: var(--ink-soft); font-style: italic; max-width: 480px; }
+  .check input { flex: none; width: 18px; height: 18px; accent-color: var(--blood); }
+
+  .msg { margin-top: 16px; padding: 12px 16px; border-radius: 4px; border: 1px solid; border-left-width: 4px; font-size: 17px; }
+  .msg:empty { display: none; }
+  .msg.good { border-color: #2f7a53; background: rgba(63,191,138,.14); }
+  .msg.bad { border-color: var(--blood); background: rgba(142,42,31,.12); }
+  .msg.warn { border-color: #a8761e; background: rgba(216,170,74,.18); }
+  .msg.info { border-color: #a8844e; background: rgba(255,249,232,.4); font-style: italic; }
+  .msg .actions { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+  /* ---------- Wheel of Fate ---------- */
+  .scry {
+    margin-top: 6px; padding: 28px 18px; border-radius: 10px;
+    display: flex; flex-direction: column; align-items: center; gap: 18px;
+    color: var(--parch-1);
+    background: radial-gradient(circle at 50% 40%, #2a2045, #120e20 60%, #07060d);
+    box-shadow: inset 0 0 40px rgba(0,0,0,.9), 0 0 0 1px #1f150c, 0 0 0 4px rgba(138,106,58,.6);
+  }
+  .wheel-wrap { position: relative; width: min(360px, 100%); aspect-ratio: 1; transition: opacity .3s, filter .3s; }
+  .wheel-wrap.idle { opacity: .5; filter: saturate(.4); }
+  .wheel-wrap.spinning { animation: pulse 1.2s ease-in-out infinite; }
+  @keyframes pulse {
+    0%, 100% { filter: drop-shadow(0 0 10px rgba(143,224,255,.35)); }
+    50% { filter: drop-shadow(0 0 26px rgba(243,210,122,.6)); }
+  }
+  .wheel-wrap canvas { width: 100%; height: 100%; display: block; }
+  .pointer {
+    position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+    width: 30px; height: 46px; z-index: 2;
+    filter: drop-shadow(0 0 6px rgba(143,224,255,.9)) drop-shadow(0 3px 3px rgba(0,0,0,.7));
+  }
+  .chance { font-family: Cinzel, serif; font-size: 19px; color: #bfb3cf; text-align: center; font-style: italic; }
+  .chance b { font-style: normal; color: var(--gold-bright); text-shadow: 0 0 10px rgba(243,210,122,.6); font-size: 24px; }
+
+  .result { text-align: center; padding: 20px; border-radius: 8px; border: 1px solid; width: 100%; max-width: 560px; animation: rise .6s ease-out; }
+  .result[hidden] { display: none; }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .result.win { border-color: var(--emerald); background: rgba(63,191,138,.12); box-shadow: 0 0 30px rgba(63,191,138,.25); }
+  .result.lose { border-color: var(--crimson); background: rgba(192,69,60,.12); box-shadow: 0 0 30px rgba(192,69,60,.2); }
+  .result h3 { font-family: 'Cinzel Decorative', Cinzel, serif; margin: 0 0 8px; font-size: 26px; }
+  .result.win h3 { color: #9ff0c8; text-shadow: 0 0 14px rgba(63,191,138,.8); }
+  .result.lose h3 { color: #f1a39c; text-shadow: 0 0 14px rgba(192,69,60,.7); }
+  .result .name { font-family: Cinzel, serif; font-weight: 700; font-size: 19px; margin: 0; color: var(--gold-bright); }
+  .result .sub { color: #a89cb8; font-size: 16px; margin: 8px 0 0; font-style: italic; }
+
+  footer { text-align: center; margin-top: 36px; color: #8d809f; font-size: 15px; font-style: italic; }
+
+  @media (max-width: 560px) {
+    .card { padding: 26px 18px; }
+    .hint { margin-left: 0; }
+    .tile { width: 36px; height: 42px; font-size: 18px; }
+    .tiles { padding: 10px; gap: 6px; }
+    input[type=number] { width: 100%; }
+    .row > .field { flex: 1 1 120px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .wheel-wrap.spinning { animation: none; }
+    .result { animation: none; }
+  }
+</style>
+</head>
+<body>
+<canvas id="fx" aria-hidden="true"></canvas>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="corner" viewBox="0 0 26 26">
+      <path d="M2 24 V8 Q2 2 8 2 H24" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <path d="M6 20 V10 Q6 6 10 6 H20" fill="none" stroke="currentColor" stroke-width=".8"/>
+      <circle cx="8" cy="8" r="2" fill="currentColor"/>
+    </symbol>
+  </defs>
+</svg>
+
+<main>
+  <header>
+    <h1>Enchantment Forge</h1>
+    <p>Gather runes, inscribe your will, and let Fate decide whether the magic binds.</p>
+    <div class="flourish">✦</div>
+  </header>
+
+  <!-- I -->
+  <section class="card">
+    <svg class="corner tl"><use href="#corner"/></svg><svg class="corner tr"><use href="#corner"/></svg>
+    <svg class="corner bl"><use href="#corner"/></svg><svg class="corner br"><use href="#corner"/></svg>
+    <div class="step"><span class="seal">I</span><h2>Gather the Runes</h2></div>
+    <p class="hint">Choose how many vowel-runes and consonant-runes to draw from the satchels.</p>
+    <div class="row">
+      <label class="field">Vowels
+        <input type="number" id="vowels" min="0" max="60" value="8">
+      </label>
+      <label class="field">Consonants
+        <input type="number" id="consonants" min="0" max="80" value="12">
+      </label>
+      <button class="primary" id="drawBtn">Cast the Runes</button>
+    </div>
+    <details>
+      <summary>Or inscribe a known set of runes</summary>
+      <div class="row">
+        <label class="field">Letters (spaces and marks are ignored)
+          <input type="text" id="customLetters" placeholder="e.g. EKRASTINOVL AMEDUSHORZE">
+        </label>
+        <button id="customBtn">Use these runes</button>
+      </div>
+    </details>
+    <div class="msg" id="drawMsg"></div>
+  </section>
+
+  <!-- II -->
+  <section class="card" id="solveCard" hidden>
+    <svg class="corner tl"><use href="#corner"/></svg><svg class="corner tr"><use href="#corner"/></svg>
+    <svg class="corner bl"><use href="#corner"/></svg><svg class="corner br"><use href="#corner"/></svg>
+    <div class="step"><span class="seal">II</span><h2>Inscribe the Enchantment</h2></div>
+    <p class="hint">Every rune you inscribe is drawn from your hoard. Words of your own making are welcome.</p>
+    <p class="pool-info" id="poolInfo"></p>
+    <div class="tiles" id="tiles"></div>
+
+    <label class="field" style="margin-top:20px">Your enchantment
+      <textarea id="solution" placeholder="Inscribe your enchantment…" spellcheck="false"></textarea>
+    </label>
+    <div class="status">
+      <span id="statusText">Each rune you inscribe is consumed from your hoard.</span>
+      <span id="statusPct"></span>
+    </div>
+    <div class="meter"><span id="meterFill"></span></div>
+
+    <div class="row" style="margin-top:18px; justify-content:flex-end">
+      <button class="primary" id="validateBtn">Seal the Inscription</button>
+    </div>
+    <div class="msg" id="solveMsg"></div>
+  </section>
+
+  <!-- III -->
+  <section class="card" id="spinCard" hidden>
+    <svg class="corner tl"><use href="#corner"/></svg><svg class="corner tr"><use href="#corner"/></svg>
+    <svg class="corner bl"><use href="#corner"/></svg><svg class="corner br"><use href="#corner"/></svg>
+    <div class="step"><span class="seal">III</span><h2>The Wheel of Fate</h2></div>
+    <p class="hint">The share of runes you bound is the chance your enchantment takes hold. Fate grants but one spin.</p>
+    <div class="scry">
+      <div class="wheel-wrap idle" id="wheelWrap">
+        <svg class="pointer" viewBox="0 0 30 46" aria-hidden="true">
+          <defs>
+            <linearGradient id="shard" x1="0" x2="1">
+              <stop offset="0" stop-color="#e9f9ff"/><stop offset=".5" stop-color="#8fe0ff"/><stop offset="1" stop-color="#3a6bd6"/>
+            </linearGradient>
+          </defs>
+          <polygon points="15,46 3,14 15,0 27,14" fill="url(#shard)" stroke="#f3d27a" stroke-width="1.5"/>
+          <polyline points="3,14 15,20 27,14" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="1"/>
+          <line x1="15" y1="0" x2="15" y2="20" stroke="rgba(255,255,255,.5)" stroke-width="1"/>
+        </svg>
+        <canvas id="wheel" aria-label="The Wheel of Fate"></canvas>
+      </div>
+      <div class="chance" id="chanceText">Seal an inscription to awaken the Wheel.</div>
+      <button class="primary" id="spinBtn" disabled>Invoke Fate</button>
+      <div class="result" id="result" hidden>
+        <h3 id="resultTitle"></h3>
+        <p class="name" id="resultName"></p>
+        <p class="sub" id="resultSub"></p>
+      </div>
+      <button id="newRoundBtn" hidden>Begin Anew</button>
+    </div>
+  </section>
+
+  <footer>Runes are drawn from weighted satchels, vowels and consonants kept apart.</footer>
+</main>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const TAU = Math.PI * 2;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const VOWELS = new Set(['A', 'E', 'I', 'O', 'U']);
+  const VOWEL_WEIGHTS = { A: 15, E: 21, I: 13, O: 13, U: 5 };
+  const CONS_WEIGHTS = {
+    B: 2, C: 3, D: 6, F: 2, G: 3, H: 2, J: 1, K: 1, L: 5, M: 4, N: 8,
+    P: 4, Q: 1, R: 9, S: 9, T: 9, V: 1, W: 1, X: 1, Y: 1, Z: 1
+  };
+
+  let pool = [];
+  let validated = null;   // { text, count, pct }
+  let livePct = 0;
+  let rot = 0;
+  let spinning = false;
+  let spun = false;
+
+  // ---------- Drawing runes ----------
+  function shuffle(a) {
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+  function makeDeck(weights) {
+    const d = [];
+    for (const [l, n] of Object.entries(weights)) for (let i = 0; i < n; i++) d.push(l);
+    return shuffle(d);
+  }
+  function drawFrom(weights, n) {
+    let deck = makeDeck(weights);
+    const out = [];
+    for (let i = 0; i < n; i++) {
+      if (!deck.length) deck = makeDeck(weights);
+      out.push(deck.pop());
+    }
+    return out;
+  }
+  function clampInt(v, min, max) {
+    const n = Math.floor(Number(v));
+    if (!Number.isFinite(n)) return min;
+    return Math.max(min, Math.min(max, n));
+  }
+
+  function setMsg(el, type, text, actions) {
+    el.className = 'msg ' + (type || '');
+    el.textContent = text || '';
+    if (actions && actions.length) {
+      const wrap = document.createElement('div');
+      wrap.className = 'actions';
+      actions.forEach(a => {
+        const b = document.createElement('button');
+        b.className = 'small' + (a.primary ? ' primary' : '');
+        b.textContent = a.label;
+        b.addEventListener('click', a.onClick);
+        wrap.appendChild(b);
+      });
+      el.appendChild(wrap);
+    }
+  }
+
+  function startRound(letters) {
+    pool = letters;
+    validated = null;
+    spun = false;
+    spinning = false;
+    const sol = $('#solution');
+    sol.value = '';
+    sol.readOnly = false;
+    renderTiles();
+    $('#solveCard').hidden = false;
+    $('#spinCard').hidden = false;
+    $('#result').hidden = true;
+    $('#newRoundBtn').hidden = true;
+    setMsg($('#solveMsg'), '', '');
+    setMsg($('#drawMsg'), '', '');
+    update();
+    sizeCanvas();
+    $('#solveCard').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+  }
+
+  $('#drawBtn').addEventListener('click', () => {
+    const v = clampInt($('#vowels').value, 0, 60);
+    const c = clampInt($('#consonants').value, 0, 80);
+    $('#vowels').value = v;
+    $('#consonants').value = c;
+    if (v + c === 0) return setMsg($('#drawMsg'), 'bad', 'Even the smallest spell needs a single rune.');
+    startRound(shuffle([...drawFrom(VOWEL_WEIGHTS, v), ...drawFrom(CONS_WEIGHTS, c)]));
+  });
+
+  $('#customBtn').addEventListener('click', () => {
+    const letters = $('#customLetters').value.toUpperCase().replace(/[^A-Z]/g, '').split('');
+    if (!letters.length) return setMsg($('#drawMsg'), 'bad', 'Inscribe at least one rune from A to Z.');
+    startRound(letters);
+  });
+
+  // ---------- Runestones and live reading ----------
+  function renderTiles() {
+    const wrap = $('#tiles');
+    wrap.innerHTML = '';
+    pool.forEach(l => {
+      const t = document.createElement('div');
+      t.className = 'tile' + (VOWELS.has(l) ? ' vowel' : '');
+      t.style.setProperty('--r', (Math.random() * 6 - 3).toFixed(1) + 'deg');
+      t.textContent = l;
+      wrap.appendChild(t);
+    });
+    const v = pool.filter(l => VOWELS.has(l)).length;
+    $('#poolInfo').textContent = `${pool.length} runes in your hoard · ${v} vowels, ${pool.length - v} consonants`;
+  }
+
+  function analyze(text) {
+    const letters = text.toUpperCase().replace(/[^A-Z]/g, '');
+    const avail = {};
+    pool.forEach(l => avail[l] = (avail[l] || 0) + 1);
+    const need = {};
+    for (const l of letters) need[l] = (need[l] || 0) + 1;
+    const over = {};
+    for (const l in need) {
+      const have = avail[l] || 0;
+      if (need[l] > have) over[l] = need[l] - have;
+    }
+    const remaining = { ...need };
+    const used = new Set();
+    pool.forEach((l, i) => {
+      if (remaining[l] > 0) { used.add(i); remaining[l]--; }
+    });
+    return { count: letters.length, over, used, pct: pool.length ? letters.length / pool.length : 0 };
+  }
+
+  function describeOver(over) {
+    return Object.keys(over).sort().map(l => `${l} ×${over[l]}`).join(', ');
+  }
+
+  function update() {
+    const text = $('#solution').value;
+    const a = analyze(text);
+    const tiles = $('#tiles').children;
+    for (let i = 0; i < tiles.length; i++) tiles[i].classList.toggle('used', a.used.has(i));
+
+    const overKeys = Object.keys(a.over);
+    const status = $('#statusText');
+    if (!a.count) {
+      status.textContent = 'Each rune you inscribe is consumed from your hoard.';
+      status.className = '';
+    } else if (overKeys.length) {
+      status.textContent = `Your hoard lacks: ${describeOver(a.over)}`;
+      status.className = 'over';
+    } else {
+      status.textContent = `Binding ${a.count} of ${pool.length} runes`;
+      status.className = '';
+    }
+    const ok = a.count > 0 && !overKeys.length;
+    const pct = ok ? a.pct : 0;
+    $('#statusPct').textContent = ok ? `${Math.round(pct * 100)}%` : '';
+    $('#meterFill').style.width = (pct * 100) + '%';
+
+    if (!spinning && !spun) {
+      if (validated && validated.text !== text.trim()) {
+        validated = null;
+        setMsg($('#solveMsg'), 'info', 'The inscription has changed. Seal it again to awaken the Wheel.');
+      }
+      livePct = pct;
+      refreshWheelState();
+    }
+  }
+
+  $('#solution').addEventListener('input', update);
+
+  // ---------- Sealing ----------
+  function accept(text, a) {
+    validated = { text, count: a.count, pct: a.pct };
+    setMsg($('#solveMsg'), 'good',
+      `The inscription holds true. ${a.count} of ${pool.length} runes bound — a ${Math.round(a.pct * 100)}% chance the enchantment takes.`);
+    refreshWheelState();
+    $('#spinCard').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+  }
+
+  $('#validateBtn').addEventListener('click', () => {
+    if (spinning || spun) return;
+    const text = $('#solution').value.trim();
+    const a = analyze(text);
+    const msg = $('#solveMsg');
+    if (!a.count) return setMsg(msg, 'bad', 'The page is blank. Inscribe your enchantment first.');
+    if (Object.keys(a.over).length) {
+      return setMsg(msg, 'bad', `You call upon runes you do not hold: ${describeOver(a.over)}.`);
+    }
+    accept(text, a);
+  });
+
+  // ---------- The Wheel of Fate ----------
+  const canvas = $('#wheel');
+  const ctx = canvas.getContext('2d');
+
+  // Elder-Futhark-style runes as line segments in a 0..1 box
+  const RUNES = [
+    [[.5,0,.5,1],[.5,0,.15,.35],[.5,0,.85,.35]],                    // Tiwaz
+    [[.5,0,.5,1],[.5,.45,.15,.05],[.5,.45,.85,.05]],                // Algiz
+    [[.15,0,.85,1],[.85,0,.15,1]],                                  // Gebo
+    [[.3,0,.3,1],[.3,.25,.8,0],[.3,.5,.8,.25]],                     // Fehu
+    [[.75,0,.25,.5],[.25,.5,.75,1]],                                // Kenaz
+    [[.5,0,.85,.35],[.85,.35,.2,1],[.5,0,.15,.35],[.15,.35,.8,1]],  // Othala
+    [[.1,0,.1,1],[.9,0,.9,1],[.1,0,.9,1],[.9,0,.1,1]],              // Dagaz
+    [[.7,0,.3,.45],[.3,.45,.7,.55],[.7,.55,.3,1]],                  // Sowilo
+    [[.3,0,.3,1],[.3,0,.75,.25],[.75,.25,.3,.5],[.3,.5,.75,1]],     // Raido
+    [[.5,0,.5,1]]                                                   // Isa
+  ];
+
+  function sizeCanvas() {
+    const r = canvas.getBoundingClientRect();
+    if (!r.width) return;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(r.width * dpr);
+    canvas.height = Math.round(r.height * dpr);
+    drawWheel();
+  }
+  new ResizeObserver(sizeCanvas).observe(canvas);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawWheel);
+
+  function currentPct() { return validated ? validated.pct : livePct; }
+
+  function drawWheel() {
+    const w = canvas.width, h = canvas.height;
+    if (!w) return;
+    const s = w / 360;
+    const R = Math.min(w, h) / 2 - 6 * s;
+    const Rin = R * 0.84;
+    const p = currentPct();
+
+    ctx.clearRect(0, 0, w, h);
+    ctx.save();
+    ctx.translate(w / 2, h / 2);
+    ctx.rotate(rot);
+
+    // Segments
+    const seg = (a0, a1, inner, outer) => {
+      const g = ctx.createRadialGradient(0, 0, Rin * 0.15, 0, 0, Rin);
+      g.addColorStop(0, inner);
+      g.addColorStop(1, outer);
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.arc(0, 0, Rin, a0, a1);
+      ctx.closePath();
+      ctx.fillStyle = g;
+      ctx.fill();
+    };
+    if (p <= 0) seg(0, TAU, '#2a2140', '#15101f');
+    else {
+      seg(0, p * TAU, '#0f3d2c', '#3fbf8a');
+      if (p < 1) seg(p * TAU, TAU, '#3a0c0c', '#b3362f');
+    }
+
+    // Sigil: heptagram + inner rings
+    ctx.strokeStyle = 'rgba(255,228,160,.28)';
+    ctx.lineWidth = 1.4 * s;
+    const hr = Rin * 0.78;
+    ctx.beginPath();
+    for (let i = 0; i <= 7; i++) {
+      const a = (i * 3 / 7) * TAU - Math.PI / 2;
+      const x = Math.cos(a) * hr, y = Math.sin(a) * hr;
+      i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+    }
+    ctx.stroke();
+    [0.78, 0.4].forEach(f => {
+      ctx.beginPath();
+      ctx.arc(0, 0, Rin * f, 0, TAU);
+      ctx.stroke();
+    });
+
+    // Boundaries between fate's two paths
+    if (p > 0 && p < 1) {
+      ctx.strokeStyle = 'rgba(243,210,122,.85)';
+      ctx.lineWidth = 2.5 * s;
+      ctx.shadowColor = 'rgba(243,210,122,.9)';
+      ctx.shadowBlur = 8 * s;
+      [0, p * TAU].forEach(a => {
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(Math.cos(a) * Rin, Math.sin(a) * Rin);
+        ctx.stroke();
+      });
+      ctx.shadowBlur = 0;
+    }
+
+    // Labels
+    const label = (a0, a1, text) => {
+      if (a1 - a0 < 0.55) return;
+      ctx.save();
+      ctx.rotate((a0 + a1) / 2);
+      ctx.fillStyle = '#fbeecb';
+      ctx.shadowColor = 'rgba(0,0,0,.8)';
+      ctx.shadowBlur = 6 * s;
+      ctx.font = `700 ${Math.round(16 * s)}px Cinzel, serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, Rin * 0.6, 0);
+      ctx.restore();
+    };
+    if (p > 0) {
+      label(0, p * TAU, 'BINDS');
+      label(p * TAU, TAU, 'FADES');
+    }
+
+    // Rune band
+    ctx.beginPath();
+    ctx.arc(0, 0, R, 0, TAU);
+    ctx.arc(0, 0, Rin, 0, TAU, true);
+    ctx.fillStyle = '#1a1226';
+    ctx.fill();
+    const count = 24;
+    const rh = (R - Rin) * 0.56, rw = rh * 0.62;
+    ctx.strokeStyle = '#f3d27a';
+    ctx.lineWidth = 1.6 * s;
+    ctx.lineCap = 'round';
+    ctx.shadowColor = 'rgba(243,190,90,.9)';
+    ctx.shadowBlur = 5 * s;
+    for (let i = 0; i < count; i++) {
+      ctx.save();
+      ctx.rotate((i / count) * TAU + TAU / count / 2);
+      ctx.translate((R + Rin) / 2, 0);
+      ctx.rotate(Math.PI / 2);
+      ctx.beginPath();
+      RUNES[i % RUNES.length].forEach(([x1, y1, x2, y2]) => {
+        ctx.moveTo((x1 - .5) * rw, (y1 - .5) * rh);
+        ctx.lineTo((x2 - .5) * rw, (y2 - .5) * rh);
+      });
+      ctx.stroke();
+      ctx.restore();
+    }
+    ctx.shadowBlur = 0;
+    ctx.restore();
+
+    // Gilded rims (static)
+    ctx.save();
+    ctx.translate(w / 2, h / 2);
+    ctx.strokeStyle = '#d8aa4a';
+    ctx.lineWidth = 3.5 * s;
+    ctx.beginPath(); ctx.arc(0, 0, R, 0, TAU); ctx.stroke();
+    ctx.lineWidth = 2 * s;
+    ctx.beginPath(); ctx.arc(0, 0, Rin, 0, TAU); ctx.stroke();
+
+    // Central gem
+    const gr = 46 * s;
+    const g = ctx.createRadialGradient(-gr * .3, -gr * .35, gr * .1, 0, 0, gr);
+    g.addColorStop(0, '#6d5aa8');
+    g.addColorStop(.6, '#2c1f4d');
+    g.addColorStop(1, '#140e24');
+    ctx.fillStyle = g;
+    ctx.shadowColor = 'rgba(143,224,255,.55)';
+    ctx.shadowBlur = 16 * s;
+    ctx.beginPath(); ctx.arc(0, 0, gr, 0, TAU); ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = '#d8aa4a';
+    ctx.lineWidth = 3 * s;
+    ctx.stroke();
+    ctx.fillStyle = '#f3d27a';
+    ctx.shadowColor = 'rgba(243,190,90,.9)';
+    ctx.shadowBlur = 10 * s;
+    ctx.font = `700 ${Math.round(24 * s)}px Cinzel, serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(Math.round(p * 100) + '%', 0, 2 * s);
+    ctx.restore();
+  }
+
+  function refreshWheelState() {
+    const armed = !!validated && !spun;
+    $('#wheelWrap').classList.toggle('idle', !validated && !spun);
+    $('#spinBtn').disabled = !armed || spinning;
+    $('#chanceText').innerHTML = validated
+      ? `Chance to bind: <b>${Math.round(validated.pct * 100)}%</b>`
+      : 'Seal an inscription to awaken the Wheel.';
+    drawWheel();
+  }
+
+  $('#spinBtn').addEventListener('click', () => {
+    if (!validated || spinning || spun) return;
+    spinning = true;
+    $('#spinBtn').disabled = true;
+    $('#validateBtn').disabled = true;
+    $('#solution').readOnly = true;
+    $('#wheelWrap').classList.add('spinning');
+
+    const p = validated.pct;
+    const success = Math.random() < p;
+    const segStart = success ? 0 : p * TAU;
+    const segLen = success ? p * TAU : (1 - p) * TAU;
+    const margin = Math.min(segLen * 0.2, 0.15);
+    const landAt = segStart + margin + Math.random() * (segLen - 2 * margin);
+
+    const target = -Math.PI / 2 - landAt;          // the crystal points down from the top
+    const start = rot;
+    const minEnd = start + TAU * 6;
+    const end = target + TAU * Math.ceil((minEnd - target) / TAU);
+    const dur = reduceMotion ? 700 : 5600;
+    const t0 = performance.now();
+
+    function frame(now) {
+      const t = Math.min(1, (now - t0) / dur);
+      const e = 1 - Math.pow(1 - t, 4);
+      rot = start + (end - start) * e;
+      drawWheel();
+      if (t < 1) requestAnimationFrame(frame);
+      else finish(success);
+    }
+    requestAnimationFrame(frame);
+  });
+
+  function finish(success) {
+    spinning = false;
+    spun = true;
+    rot = ((rot % TAU) + TAU) % TAU;
+    $('#wheelWrap').classList.remove('spinning');
+    const r = $('#result');
+    r.hidden = false;
+    r.className = 'result ' + (success ? 'win' : 'lose');
+    $('#resultTitle').textContent = success ? 'The Enchantment Binds!' : 'The Magic Fades…';
+    $('#resultName').textContent = validated.text;
+    $('#resultSub').textContent = success
+      ? `Forged from ${validated.count} of ${pool.length} runes, against ${Math.round(validated.pct * 100)}% odds.`
+      : `${validated.count} of ${pool.length} runes were not enough to hold it this time.`;
+    $('#newRoundBtn').hidden = false;
+    $('#validateBtn').disabled = false;
+    refreshWheelState();
+    const wr = $('#wheelWrap').getBoundingClientRect();
+    burst(wr.left + wr.width / 2, wr.top + wr.height / 2, success);
+  }
+
+  $('#newRoundBtn').addEventListener('click', () => {
+    validated = null;
+    spun = false;
+    pool = [];
+    $('#solveCard').hidden = true;
+    $('#spinCard').hidden = true;
+    $('#solution').readOnly = false;
+    window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+  });
+
+  // ---------- Embers and sparks ----------
+  const fx = $('#fx');
+  const fctx = fx.getContext('2d');
+  let embers = [];
+  let sparks = [];
+  let fdpr = 1;
+
+  function sizeFx() {
+    fdpr = window.devicePixelRatio || 1;
+    fx.width = Math.round(innerWidth * fdpr);
+    fx.height = Math.round(innerHeight * fdpr);
+    const want = reduceMotion ? 0 : Math.round(Math.min(60, innerWidth / 22));
+    while (embers.length < want) embers.push(newEmber(true));
+    embers.length = want;
+  }
+  function newEmber(anywhere) {
+    return {
+      x: Math.random() * innerWidth,
+      y: anywhere ? Math.random() * innerHeight : innerHeight + 10,
+      vy: -(0.25 + Math.random() * 0.6),
+      sway: Math.random() * TAU,
+      size: 0.8 + Math.random() * 1.8,
+      a: 0.25 + Math.random() * 0.55
+    };
+  }
+  function burst(x, y, success) {
+    const n = reduceMotion ? 0 : (success ? 110 : 50);
+    const colors = success ? ['#f3d27a', '#9ff0c8', '#ffffff', '#3fbf8a'] : ['#c0453c', '#6d6574', '#8a7f90', '#f1a39c'];
+    for (let i = 0; i < n; i++) {
+      const a = Math.random() * TAU;
+      const sp = success ? 2 + Math.random() * 6 : 0.6 + Math.random() * 2;
+      sparks.push({
+        x, y,
+        vx: Math.cos(a) * sp,
+        vy: Math.sin(a) * sp - (success ? 1 : 1.2),
+        g: success ? 0.06 : -0.02,
+        life: 1,
+        decay: 0.008 + Math.random() * 0.012,
+        size: success ? 1.5 + Math.random() * 2.5 : 3 + Math.random() * 5,
+        color: colors[i % colors.length]
+      });
+    }
+  }
+  function tick() {
+    fctx.setTransform(fdpr, 0, 0, fdpr, 0, 0);
+    fctx.clearRect(0, 0, innerWidth, innerHeight);
+    fctx.globalCompositeOperation = 'lighter';
+    for (const e of embers) {
+      e.y += e.vy;
+      e.sway += 0.02;
+      e.x += Math.sin(e.sway) * 0.3;
+      if (e.y < -10) Object.assign(e, newEmber(false));
+      fctx.fillStyle = `rgba(255,170,80,${e.a * 0.25})`;
+      fctx.beginPath(); fctx.arc(e.x, e.y, e.size * 3, 0, TAU); fctx.fill();
+      fctx.fillStyle = `rgba(255,210,140,${e.a})`;
+      fctx.beginPath(); fctx.arc(e.x, e.y, e.size, 0, TAU); fctx.fill();
+    }
+    sparks = sparks.filter(sp => sp.life > 0);
+    for (const sp of sparks) {
+      sp.x += sp.vx; sp.y += sp.vy; sp.vy += sp.g;
+      sp.vx *= 0.985; sp.life -= sp.decay;
+      fctx.globalAlpha = Math.max(0, sp.life);
+      fctx.fillStyle = sp.color;
+      fctx.beginPath(); fctx.arc(sp.x, sp.y, sp.size, 0, TAU); fctx.fill();
+    }
+    fctx.globalAlpha = 1;
+    fctx.globalCompositeOperation = 'source-over';
+    requestAnimationFrame(tick);
+  }
+  addEventListener('resize', sizeFx);
+  sizeFx();
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
